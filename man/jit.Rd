@@ -3,13 +3,13 @@
 \title{Just-in-time compilation}
 \description{
   Enable just-in-time (JIT) compilation of a block of R code.
-  Loops in a JIT block are much faster.
+  Loops in a JIT block are generally much faster.
 
   This function is only useful under Ra.
   It has no effect under standard R.
-  See \url{http://www.milbo.users.sonic.net/ra}.
+  See \url{http://www.milbo.users.sonic.net/ra/index.html}.
 
-  This help page is for Ra 1.0.6.
+  This help page is for Ra 1.0.6 and higher.
 }
 \usage{
   jit(jit = NA, trace = 0)
@@ -68,8 +68,8 @@
 
         \item Assignment to scalars or vectors: \code{x <- y}
 
-        \item \link[=Extract]{Subscripted} vectors with an integer or real
-         scalar subscript: \code{x[i] <- y[j]}
+        \item \link[=Extract]{Subscripted} vectors with a positive integer 
+         or real scalar subscript: \code{x[i] <- y[j]}
 
         \item \link{Control} constructs such as
           \link[=Control]{if} and \link[=Control]{for}
@@ -123,16 +123,17 @@
 
     The short version of the next few sections is:
 \itemize{
+    \item you will get an error message if you change the type or length 
+          of a jitted variable.  There are a few other semantic restrictions.
     \item arithmetic in jitted code is similar to C
     \item don't use NAs in jitted code
-    \item you will get an error message if you change the type or length 
-          of a jitted variable.
 }
 \strong{Differences between standard R and jitted code}
 
     The JIT compiler will not allow you to change the length or type of a jitted variable.
+    (For this reason, the "L" suffix to define an integer constant is useful in JIT blocks,
+    although seldom used in standard R code.)
     Here "type" means the type returned by \link{typeof}.
-    (For this reason, the "L" suffix to define an integer constant is useful in JIT blocks.)
 
     The JIT compiler will not allow you to use functions like
     \link{attach} in a JIT block or in functions called from the JIT block.
@@ -164,7 +165,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
     \bold{NaNs}: In jitted code \link[=NaN]{NaNs} (always \link{double})
     are handled directly by the machine hardware,
     as is usually the case in standard R.
-    (We assume IEEE 754 hardware \url{http://en.wikipedia.org/wiki/IEEE_754}).
+    (We assume IEEE 754 hardware \url{http://en.wikipedia.org/wiki/IEEE_754}.)
     The hardware knows about double NaNs:
     where necessary it will generate them (zero divided by zero is NaN)
     and propagate them (NaN + 123 is  NaN). 
@@ -199,7 +200,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
 
         \code{1.2 + NA   # evaluates to NA in standard R}
 
-    but in jitted code, the NA is treated by the machine
+    In jitted code, the NA is treated by the machine
     hardware as an integer with the value \code{INT_MIN} and is
     thus converted to a double with the value \code{INT_MIN}:
 
@@ -253,7 +254,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
   There are some \strong{important conditions} when using \code{jit(2)}.
   The danger is that R will usually not warn you
   if your code doesn't meet a condition --- you will just get wrong results.
-  Because of these dangers, \code{jit(2)} is considered experimental at present.
+  Because of this danger, \code{jit(2)} is considered experimental at present.
   The conditions are:
    \itemize{
    \item The inner loop sequence 
@@ -263,17 +264,18 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
   if \code{m} changes between the curly braces (which would require
   a recalculation of \code{1:m}).
   It is fine to change \code{n} since this affects only the outer loop.
-  \item Do not use \code{break} or \code{next} in the inner loop.
+  \item Do not use \code{break} or \code{next} in the inner loop (they
+        will incorrectly break to the outer loop, but please don't rely on this).
   \item There is no NAMED handling in the inner loop [RA\_TODO elaborate].
   \item Assigning to the inner loop variable causes incorrect results and
         and an error message (which is issued only at the
         end of the loop):
 }
 \preformatted{
-    jit(2)
-    for (i in 1:3)
-       for (j in 1:3)
-	   j = 9L     # error msg: assignment to loop variable "j"
+	jit(2)
+	for (i in 1:3)
+	   for (j in 1:3)
+	       j = 9L     # error msg: assignment to loop variable "j"
 }
 
 \strong{Limits of the current implementation}
@@ -318,7 +320,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
     }
 }
 \seealso{
-    For more information on the jitter see \url{http://www.milbo.users.sonic.net/ra}\cr
+    For more information on the jitter see \url{http://www.milbo.users.sonic.net/ra/index.html}\cr
     \code{\link{nojit}}\cr
     \code{\link{is.ra}}\cr
     \code{\link{jitter}} is not related

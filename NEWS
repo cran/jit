@@ -1,6 +1,8 @@
 Jit Package NEWS
 ----------------
 
+0.0-4 Man page touchups
+
 0.0-3 Changed grep("nojit") to grep("^nojit$") to prevent false matches
 
 0.0-2 Man page fixes
