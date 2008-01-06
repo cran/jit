@@ -1,0 +1,38 @@
+
+R version 2.6.2  (2008-03-05 Ra 1.0.5)
+Copyright (C) 2008 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> # test.jit.R
+> # This just does a basic test to check that the jit package ported 
+> # without problems.  Much more complete tests are included in the 
+> # Ra source distribution. The complete tests are not included here
+> # because they give different output for R and Ra.
+> 
+> library(jit)
+> foo <- function(jit.flag)
++ {
++     jit(jit.flag)
++     N <- 3e5
++     x <- double(N)
++     for(i in 1:N)
++         x[i] <- i + 1
++     x
++ }
+> time.nojit <- system.time(foo.nojit <- foo(0))[1];
+> time.jit   <- system.time(foo.jit   <- foo(1))[1];
+> stopifnot(identical(foo.nojit, foo.jit))
+> stopifnot(!is.ra || time.nojit / time.jit > .3)
+> 

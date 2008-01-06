@@ -1,0 +1,5 @@
+# Export is.ra, jit, nojit but only if defined by startup code in
+# the package. That's why we use regular expressions below.
+exportPattern("^is.ra$")
+exportPattern("^nojit$")
+exportPattern("^jit$")
