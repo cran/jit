@@ -9,7 +9,7 @@
   It has no effect under standard R.
   See \url{http://www.milbo.users.sonic.net/ra}.
 
-  This version of \code{jit} is for Ra 1.0-05.
+  This version of the help page is \code{jit} is for Ra 1.0.5.
 }
 \usage{
   jit(jit = NA, trace = 0)
@@ -132,7 +132,7 @@
 
     The JIT compiler will not allow you to change the length or type of a jitted variable.
     Here "type" means the type returned by \link{typeof}.
-    (For this reason the "L" suffix to define an integer constant is useful in JIT blocks.)
+    (For this reason, the "L" suffix to define an integer constant is useful in JIT blocks.)
 
     The JIT compiler will not allow you to use functions like
     \link{attach} in a JIT block or in functions called from the JIT block.
@@ -186,7 +186,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
     The hardware does not know about integer and logical NAs.
     In standard R these are therefore handled in software;
     in jitted code they are treated like any other integer.
-    Thus a \link[=logical]{Logical} or \link{integer}
+    Thus a \link{logical} or \link{integer}
     \link{NA} in jitted code is treated as 
     an integer with the value \code{INT_MIN} (with a logical value of TRUE).
 
@@ -266,13 +266,13 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
   \item There is no NAMED handling in the inner loop [RA\_TODO elaborate].
   \item Assigning to the inner loop variable causes incorrect results and
         and an error message (which is issued only at the
-        end of the loop).  Example:
+        end of the loop):
+}
 \preformatted{
     jit(2)
     for (i in 1:3)
        for (j in 1:3)
 	   j = 9L     # error msg: assignment to loop variable "j"
-}
 }
 
 \strong{Limits of the current implementation}
