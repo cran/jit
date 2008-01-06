@@ -9,7 +9,7 @@
   It has no effect under standard R.
   See \url{http://www.milbo.users.sonic.net/ra}.
 
-  This version of the help page is \code{jit} is for Ra 1.0.5.
+  This help page is for Ra 1.0.6.
 }
 \usage{
   jit(jit = NA, trace = 0)
@@ -148,7 +148,8 @@
 
     Most attributes of jitted variables are dropped.
 
-    An out-of-range index in a jitted expression will cause an error message:
+    An out-of-range index in a jitted expression will cause an error message
+    (the \link{options} \code{check.bounds} setting is ignored):
 \preformatted{
 x <- 1; x[3]   # NA in standard R but "Error: out-of-range index" when jitted
 }

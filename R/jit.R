@@ -10,7 +10,7 @@ if (!defined("^is.ra$", .GlobalEnv))
 
 # remove previous def of nojit, if any, for a quiet load
 
-if(length(grep("nojit", ls(envir=.GlobalEnv))))
+if(length(grep("^nojit$", ls(envir=.GlobalEnv))))
     try(rm("nojit", envir=.GlobalEnv))
 
 nojit <- function(sym = NULL)
