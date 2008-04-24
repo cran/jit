@@ -9,7 +9,7 @@
   It has no effect under standard R.
   See \url{http://www.milbo.users.sonic.net/ra/index.html}.
 
-  This help page is for Ra 1.0.6 and higher.
+  This help page is for Ra 1.0.7 and higher.
 }
 \usage{
   jit(jit = NA, trace = 0)
@@ -107,12 +107,17 @@
        Some of these functions can take more than one argument;
        they are jitted only if given one argument.
     }
-
+    Functions called from the JIT block are not jitted.
+    For example, the \code{for} in the first line of code below is not
+    compiled because it is called from within \code{system.time}.
+\preformatted{
+    jit(1); system.time({ for(i in 1:100) x<-x+i })   # is not jitted
+    system.time({ jit(1); for(i in 1:100) x<-x+i })   # is jitted
+}
     Use \code{trace>=1} to see what was jitted
     (and possibly modify your code to enable more jitting).
     Code in a JIT block that is not actually jitted will run as
     normal R code and coexist happily with jitted code.
-    Functions called from the JIT block are not jitted.
 
 \strong{Summary of the differences between standard R and jitted code}
 
@@ -181,7 +186,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
 
     \bold{Integer and logical NAs}:
     Integer and logical NAs 
-    are meaningless in jitted code, and will cause incorect results if used.
+    are meaningless in jitted code, and will cause incorrect results if used.
     Integer and logical NAs are represented by \code{INT_MIN} internally in R.
     Here \code{INT_MIN} is the minimum integer representable in a machine word.
     (On a 32 bit machine, \code{INT_MIN} is about -2e9.)
@@ -248,7 +253,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
 	...
     }
 }
-  To be optimized this way the entire inner loop body must be jitted and
+  To be optimized this way the entire inner loop body must be jittable and
   the loop sequence (\code{1:m} above) must have integer type.
 
   There are some \strong{important conditions} when using \code{jit(2)}.
