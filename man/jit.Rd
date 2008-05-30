@@ -9,7 +9,7 @@
   It has no effect under standard R.
   See \url{http://www.milbo.users.sonic.net/ra/index.html}.
 
-  This help page is for Ra 1.0.7 and higher.
+  This help page is for Ra 1.1.0 and higher.
 }
 \usage{
   jit(jit = NA, trace = 0)
@@ -24,7 +24,7 @@
 
     \strong{1}  start JIT block
 
-    \strong{2}  start JIT block with extra optimization of inner loops (fast but
+    \strong{2}  start JIT block with extra optimization of nested loops (fast but
                 potentially dangerous, see below)
   }
   \item{trace}{
@@ -70,13 +70,14 @@
 
         \item \link[=Extract]{Subscripted} vectors with a positive integer 
          or real scalar subscript: \code{x[i] <- y[j]}
+         (but not double subscripts: \code{x[i,j]})
 
         \item \link{Control} constructs such as
           \link[=Control]{if} and \link[=Control]{for}
           when the condition is
           \link{logical}, \link{integer}, or \link{double}.
 
-        \item The following functions when the argument is
+        \item The following (one argument) functions when the argument is
           \link{logical}, \link{integer}, or \link{double}:
         \link{abs}
         \link{acos}
@@ -136,7 +137,7 @@
 \strong{Differences between standard R and jitted code}
 
     The JIT compiler will not allow you to change the length or type of a jitted variable.
-    (For this reason, the "L" suffix to define an integer constant is useful in JIT blocks,
+    (For this reason, the "L" suffix to define an integer constant 123L is useful in JIT blocks,
     although seldom used in standard R code.)
     Here "type" means the type returned by \link{typeof}.
 
@@ -273,7 +274,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
         will incorrectly break to the outer loop, but please don't rely on this).
   \item There is no NAMED handling in the inner loop [RA\_TODO elaborate].
   \item Assigning to the inner loop variable causes incorrect results and
-        and an error message (which is issued only at the
+        an error message (which is issued only at the
         end of the loop):
 }
 \preformatted{
@@ -297,7 +298,18 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
 
     More types of expression will be jitted in future releases.
 
-    Thorough testing of the jitter is still in progress.
+\strong{Note for package writers}
+
+If your package benefits from \code{jit}, then 
+we suggest that you simply make your package require \code{jit}
+(by putting \code{Depends:jit} in the \code{DESCRIPTION} file).
+People can then use standard R with your package ---
+calls to \code{jit()} will have no effect but will not cause warnings or errors ---
+but people who use Ra will get speedups.
+You could put a remark in your package documentation saying
+that speed will be improved using Ra instead of R.
+% You can also use \code{\link{is.ra}} to issue a warning if 
+% you really want your users to use Ra instead of R.
 }
 \value{
     A three element integer vector.\cr

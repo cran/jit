@@ -1,6 +1,9 @@
 Jit Package NEWS
 ----------------
 
+0.0-7 May 28, 2008 
+      Minor man page tweaks for Ra 1.1.0
+
 0.0-6 Tidy up of jit.R
 
 0.0-5 Man page touchups from user feedback and for Ra port to R 2.7.0
