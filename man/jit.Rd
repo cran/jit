@@ -9,7 +9,7 @@
   It has no effect under standard R.
   See \url{http://www.milbo.users.sonic.net/ra/index.html}.
 
-  This help page is for Ra 1.1.0 and higher.
+  This help page is for Ra 1.1.1 and higher.
 }
 \usage{
   jit(jit = NA, trace = 0)
@@ -272,6 +272,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
   It is fine to change \code{n} since this affects only the outer loop.
   \item Do not use \code{break} or \code{next} in the inner loop (they
         will incorrectly break to the outer loop, but please don't rely on this).
+        It is, however, ok to use \code{return} in the inner loop.
   \item There is no NAMED handling in the inner loop [RA\_TODO elaborate].
   \item Assigning to the inner loop variable causes incorrect results and
         an error message (which is issued only at the
