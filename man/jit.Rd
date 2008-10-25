@@ -9,7 +9,7 @@
   It has no effect under standard R.
   See \url{http://www.milbo.users.sonic.net/ra/index.html}.
 
-  This help page is for Ra 1.1.1 and higher.
+  This help page is for Ra 1.2.0 and higher.
 }
 \usage{
   jit(jit = NA, trace = 0)
@@ -68,9 +68,9 @@
 
         \item Assignment to scalars or vectors: \code{x <- y}
 
-        \item \link[=Extract]{Subscripted} vectors with a positive integer 
-         or real scalar subscript: \code{x[i] <- y[j]}
-         (but not double subscripts: \code{x[i,j]})
+        \item \link[=Extract]{Subscripted} vectors with a positive integer
+         or real scalar subscript: \code{x[i] <- y[j]}.
+         Double subscripts \code{x[i,j]} are jitted only on the rhs of assignments.
 
         \item \link{Control} constructs such as
           \link[=Control]{if} and \link[=Control]{for}
@@ -129,10 +129,10 @@
 
     The short version of the next few sections is:
 \itemize{
-    \item you will get an error message if you change the type or length 
+    \item you will get an error message if you change the type or length
           of a jitted variable.  There are a few other semantic restrictions.
     \item arithmetic in jitted code is similar to C
-    \item don't use NAs in jitted code
+    \item avoid NAs in jitted code (NaNs are ok)
 }
 \strong{Differences between standard R and jitted code}
 
@@ -145,7 +145,7 @@
     \link{attach} in a JIT block or in functions called from the JIT block.
     The idea is to keep the environment stable so jitted code can be efficient.
 
-    \link[=NA]{NAs} of type \link{integer} and \link{logical} are not handled 
+    \link[=NA]{NAs} of type \link{integer} and \link{logical} are not handled
     in jitted code --- the next section gives details.
 
     The results of comparison to \link{NaN} differ between standard R and jitted code
@@ -174,19 +174,19 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
     (We assume IEEE 754 hardware \url{http://en.wikipedia.org/wiki/IEEE_754}.)
     The hardware knows about double NaNs:
     where necessary it will generate them (zero divided by zero is NaN)
-    and propagate them (NaN + 123 is  NaN). 
+    and propagate them (NaN + 123 is  NaN).
 
     \bold{Double NAs}: In R, one of the many possible values of NaN
     provided by the hardware is defined to be the \link{double} \link{NA}.
     The hardware therefore makes no distinction between double NAs and other NaNs.
     Standard R evaluation has some software to handle double NAs
-    over and above the hardware 
+    over and above the hardware
     (mostly in type conversions, which don't get jitted anyway);
     jitted code has no such software.
     Thus in jitted code, double NAs behave identically to NaNs.
 
     \bold{Integer and logical NAs}:
-    Integer and logical NAs 
+    Integer and logical NAs
     are meaningless in jitted code, and will cause incorrect results if used.
     Integer and logical NAs are represented by \code{INT_MIN} internally in R.
     Here \code{INT_MIN} is the minimum integer representable in a machine word.
@@ -195,7 +195,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
     In standard R these are therefore handled in software;
     in jitted code they are treated like any other integer.
     Thus a \link{logical} or \link{integer}
-    \link{NA} in jitted code is treated as 
+    \link{NA} in jitted code is treated as
     an integer with the value \code{INT_MIN} (with a logical value of TRUE).
 
     Remember that a plain NA in your program text is treated
@@ -240,18 +240,18 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
   double \code{Inf} in both standard R and jitted code.
 
 \strong{Optimizing nested loops with jit(2)}
- 
+
   Use \code{jit(2)} instead of \code{jit(1)} for extra optimization
-  of inner nested loops.  
+  of inner nested loops.
   In the example below the inner \code{j} loop will
   undergo this optimization:
 \preformatted{
     jit(2)
     for (i in 1:n) {   # same as jit(1) because is outermost loop
-	...
-	for (j in 1:m) # extra optimization with jit(2), 1:m must not change
-	    ...        # any further loops in here also optimized with jit(2)
-	...
+        ...
+        for (j in 1:m) # extra optimization with jit(2), 1:m must not change
+            ...        # any further loops in here also optimized with jit(2)
+        ...
     }
 }
   To be optimized this way the entire inner loop body must be jittable and
@@ -263,8 +263,8 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
   Because of this danger, \code{jit(2)} is considered experimental at present.
   The conditions are:
    \itemize{
-   \item The inner loop sequence 
-   (\code{1:m} in the example above) is calculated just once and 
+   \item The inner loop sequence
+   (\code{1:m} in the example above) is calculated just once and
   thereafter assumed constant for the entire JIT block.
   Thus the example code above will give incorrect results without warning
   if \code{m} changes between the curly braces (which would require
@@ -279,10 +279,10 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
         end of the loop):
 }
 \preformatted{
-	jit(2)
-	for (i in 1:3)
-	   for (j in 1:3)
-	       j = 9L     # error msg: assignment to loop variable "j"
+        jit(2)
+        for (i in 1:3)
+           for (j in 1:3)
+               j = 9L     # error msg: assignment to loop variable "j"
 }
 
 \strong{Limits of the current implementation}
@@ -301,7 +301,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
 
 \strong{Note for package writers}
 
-If your package benefits from \code{jit}, then 
+If your package benefits from \code{jit}, then
 we suggest that you simply make your package require \code{jit}
 (by putting \code{Depends:jit} in the \code{DESCRIPTION} file).
 People can then use standard R with your package ---
@@ -309,7 +309,7 @@ calls to \code{jit()} will have no effect but will not cause warnings or errors 
 but people who use Ra will get speedups.
 You could put a remark in your package documentation saying
 that speed will be improved using Ra instead of R.
-% You can also use \code{\link{is.ra}} to issue a warning if 
+% You can also use \code{\link{is.ra}} to issue a warning if
 % you really want your users to use Ra instead of R.
 }
 \value{
