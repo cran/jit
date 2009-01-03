@@ -3,13 +3,13 @@
 \title{Just-in-time compilation}
 \description{
   Enable just-in-time (JIT) compilation of a block of R code.
-  Loops in a JIT block are generally much faster.
+  Arithmetic in loops in a JIT block is generally faster.
 
   This function is only useful under Ra.
   It has no effect under standard R.
   See \url{http://www.milbo.users.sonic.net/ra/index.html}.
 
-  This help page is for Ra 1.2.0 and higher.
+  This help page is for Ra 1.2.1 and higher.
 }
 \usage{
   jit(jit = NA, trace = 0)
@@ -19,7 +19,7 @@
     \strong{NA} make no changes but return the current JIT state (default)
 
     \strong{0}  end JIT block ---
-        using \code{jit(0)} is often unnecessary because an implicit \code{jit(0)} is
+        using \code{jit(0)} is usually unnecessary because an implicit \code{jit(0)} is
         performed when the function returns
 
     \strong{1}  start JIT block
@@ -60,7 +60,7 @@
     \itemize{
         \item \link{Arithmetic} and \link[=Comparison]{comparison} operations on
           \link{logical}, \link{integer}, and \link{double} scalars
-          and vectors.
+          and vectors (but not matrices).
           Here "scalar" means a vector of \link{length} one.
           Both arguments of a binary operator must have the same
           length, or one of them must have length 1 (general R recycling
@@ -70,7 +70,8 @@
 
         \item \link[=Extract]{Subscripted} vectors with a positive integer
          or real scalar subscript: \code{x[i] <- y[j]}.
-         Double subscripts \code{x[i,j]} are jitted only on the rhs of assignments.
+         Double subscripts \code{x[i,j]} are jitted too, but not 
+         on the lhs of assignments.
 
         \item \link{Control} constructs such as
           \link[=Control]{if} and \link[=Control]{for}
@@ -131,15 +132,16 @@
 \itemize{
     \item you will get an error message if you change the type or length
           of a jitted variable.  There are a few other semantic restrictions.
-    \item arithmetic in jitted code is similar to C
-    \item avoid NAs in jitted code (NaNs are ok)
+    \item arithmetic in jitted code is similar to C.
+    \item avoid NAs in jitted code (NaNs are ok).
 }
 \strong{Differences between standard R and jitted code}
 
     The JIT compiler will not allow you to change the length or type of a jitted variable.
-    (For this reason, the "L" suffix to define an integer constant 123L is useful in JIT blocks,
+    (For this reason, the "L" suffix to define an integer constant \code{123L} is useful in JIT blocks,
     although seldom used in standard R code.)
-    Here "type" means the type returned by \link{typeof}.
+    Here "type" means the type returned by \link{typeof}, such as 
+    \code{logical}, \code{integer}, or \code{double}.
 
     The JIT compiler will not allow you to use functions like
     \link{attach} in a JIT block or in functions called from the JIT block.
@@ -156,7 +158,7 @@
     Most attributes of jitted variables are dropped.
 
     An out-of-range index in a jitted expression will cause an error message
-    (the \link{options} \code{check.bounds} setting is ignored):
+    (the \code{check.bounds} \link{options} setting is ignored):
 \preformatted{
 x <- 1; x[3]   # NA in standard R but "Error: out-of-range index" when jitted
 }
@@ -188,9 +190,10 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
     \bold{Integer and logical NAs}:
     Integer and logical NAs
     are meaningless in jitted code, and will cause incorrect results if used.
-    Integer and logical NAs are represented by \code{INT_MIN} internally in R.
-    Here \code{INT_MIN} is the minimum integer representable in a machine word.
-    (On a 32 bit machine, \code{INT_MIN} is about -2e9.)
+    The following explains why.
+    Integer and logical NAs are represented by \code{INT_MIN} internally in R,
+    where \code{INT_MIN} is the minimum integer representable in a machine word
+    (on a 32 bit machine, \code{INT_MIN} is about -2e9).
     The hardware does not know about integer and logical NAs.
     In standard R these are therefore handled in software;
     in jitted code they are treated like any other integer.
@@ -199,15 +202,15 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
     an integer with the value \code{INT_MIN} (with a logical value of TRUE).
 
     Remember that a plain NA in your program text is treated
-    as \emph{logical} by R and thus as \code{INT_MIN} in jitted code.
-    In the standard R code below, the logical NA is
-    converted to a double NA (because 1.2 is double, making the
-    whole expression double):
+    as \emph{logical} by R.
+    In the standard R code below, the software recognizes that the
+    logical NA is a NA, and thus correctly converts it to a double NA
+    (the conversion is necessary to add the NA to 1.2):
 
         \code{1.2 + NA   # evaluates to NA in standard R}
 
-    In jitted code, the NA is treated by the machine
-    hardware as an integer with the value \code{INT_MIN} and is
+    In jitted code, the logical NA is not recognized as a NA --- 
+    it is treated as an integer with the value \code{INT_MIN} and is
     thus converted to a double with the value \code{INT_MIN}:
 
         \code{1.2 + NA   # evaluates to 1.2 + INT_MIN in jitted code}.
@@ -226,11 +229,10 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
         NaN == NaN        NA                FALSE (sic)
 }
 
-   Other discrepancies (these were tested on a Windows XP Pentium D system):
+   Other discrepancies:
 \preformatted{
                       standard R            jitted
 
-        0 ^ NaN       Inf (why?)              NaN
         1L \%/\% 0L     integer NA        runtime error message
         1L \%\% 0L      integer NA        runtime error message
 }
@@ -313,12 +315,12 @@ that speed will be improved using Ra instead of R.
 % you really want your users to use Ra instead of R.
 }
 \value{
-    A three element integer vector.\cr
+    This function returns a three element integer vector.\cr
 
-    \bold{Under R}\cr\cr
+    \bold{Value under R}\cr\cr
     All elements are 0.\cr
 
-    \bold{Under Ra}\cr\cr
+    \bold{Value under Ra}\cr\cr
        \code{[1]} The value of the last specified \code{jit} argument to \code{jit()},
              so is \code{1} or \code{2} if in a JIT block, else \code{0}.
              Is \code{0} in functions called from the JIT block.\cr\cr
@@ -344,16 +346,16 @@ that speed will be improved using Ra instead of R.
     \code{\link{jitter}} is not related
 }
 \examples{
-foo <- function(N) {
+foo <- function(N, jit.flag) {
     jit(jit.flag)
     x <- 0
     for (i in 1:N)
        x <- x + 1
     x
 }
-N = 3e5
-jit.flag <- 0; time.nojit <- system.time(foo(N))[1]
-jit.flag <- 1; time.jit   <- system.time(foo(N))[1]
+N = 1e6
+time.nojit <- system.time(foo(N, jit.flag=0))[1]
+time.jit   <- system.time(foo(N, jit.flag=1))[1]
 cat("Time ratio", time.jit / time.nojit, "\n")
 jit(0)
 }

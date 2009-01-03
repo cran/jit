@@ -1,6 +1,9 @@
 Jit Package NEWS
 ----------------
 
+1.0-1 Jan 3, 2008
+      Man page touchups for Ra 1.2.1 (based on R 2.8.1)
+
 1.0-0 Oct 23, 2008
       Man page touchups for Ra 1.2.0 (which added support of 
       matrix subscripts and is based on R 2.8.0)
