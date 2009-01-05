@@ -1,6 +1,16 @@
 Jit Package NEWS
 ----------------
 
+1.0-3 Jan 5, 2008
+      We now get a clean rcmd check.
+      Thanks to Kurt Hornik and Dirk Eddelbeuttel for their help.
+
+1.0-2 Jan 5, 2008
+      The is.ra flag was not being set reliably.  This was possibly related
+      to recent changes in library code in standard R.  Fixed it by 
+      moving the code in jit.R into .onLoad() and using assign(). 
+      Thanks to Dirk Eddelbeuttel for nailing this.
+
 1.0-1 Jan 3, 2008
       Man page touchups for Ra 1.2.1 (based on R 2.8.1)
 

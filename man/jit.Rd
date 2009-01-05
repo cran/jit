@@ -70,7 +70,7 @@
 
         \item \link[=Extract]{Subscripted} vectors with a positive integer
          or real scalar subscript: \code{x[i] <- y[j]}.
-         Double subscripts \code{x[i,j]} are jitted too, but not 
+         Double subscripts \code{x[i,j]} are jitted too, but not
          on the lhs of assignments.
 
         \item \link{Control} constructs such as
@@ -140,7 +140,7 @@
     The JIT compiler will not allow you to change the length or type of a jitted variable.
     (For this reason, the "L" suffix to define an integer constant \code{123L} is useful in JIT blocks,
     although seldom used in standard R code.)
-    Here "type" means the type returned by \link{typeof}, such as 
+    Here "type" means the type returned by \link{typeof}, such as
     \code{logical}, \code{integer}, or \code{double}.
 
     The JIT compiler will not allow you to use functions like
@@ -209,7 +209,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
 
         \code{1.2 + NA   # evaluates to NA in standard R}
 
-    In jitted code, the logical NA is not recognized as a NA --- 
+    In jitted code, the logical NA is not recognized as a NA ---
     it is treated as an integer with the value \code{INT_MIN} and is
     thus converted to a double with the value \code{INT_MIN}:
 

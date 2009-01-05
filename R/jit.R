@@ -1,50 +1,45 @@
 # jit.R
+#
+# This makes sure that "is.ra", "jit", and "nojit" are defined.
+#
+# In the R environment, we define all these from scratch.
+#
+# In the Ra environment, "jit" is already defined internally.
+# Also "nojit" is defined internally but needs some padding
+# around it, which we add here.
 
-# Define is.ra but only if it is not yet defined.
+is.ra <- FALSE
 
-defined. <- function(pat, env)
-    length(grep(pat, ls(envir=env))) != 0
+# Define a dummy jit function.
+# We define jit's return value once and for all here, so calls 
+# to jit are as efficient as possible (no mallocs needed).
 
-if (!defined.("^is.ra$", .GlobalEnv))
-    is.ra <- (length(grep(" Ra", R.version.string, ignore.case = TRUE)) != 0)
+result <- c(0L, 0L, 0L)
+names(result) <- c("jit", "trace", "callers.jit")
 
-# remove previous def of nojit, if any, for a quiet load
-
-if(defined.("^nojit$", .GlobalEnv))
-    try(rm("nojit", envir=.GlobalEnv))
-
-nojit <- function(sym = NULL)
-{
-    # use substitute else do_nojit gets the already evaluated sym
-
-    result <- NULL
-
-    if (is.ra)
-        result <- .Internal(nojit(substitute(sym)))
-
-    if (is.null(sym))           # default arg?
-        result                  # show nojit symbols
+jit <- function(jit = NA, trace = 0) {
+    if(is.na(jit))      # default arg?
+        result          # show result
     else
         invisible(result)
 }
 
-if (!is.ra) {
-    # Standard R, so must define dummy jit function
-    # (under Ra will use the do_jit defined in jit.c).
+nojit <- function(sym = NULL) {
+    result <- NULL
+    # use substitute else do_nojit gets the already evaluated sym
+    if(is.ra)
+        result <- .Internal(nojit(substitute(sym)))
+    if(is.null(sym))    # default arg?
+        result          # show nojit symbols
+    else
+        invisible(result)
+}
 
-    if (defined.("jit", env=.GlobalEnv))
-        try(rm("jit", envir=.GlobalEnv))
-
-    # define return value just once, for efficiency in jit()
-
-    result <- c(0L, 0L, 0L)
-    names(result) <- c("jit", "trace", "callers.jit")
-
-    jit <- function(jit = NA, trace = 0)
-    {
-        if (is.na(jit)) # default arg?
-            result      # show result
-        else
-            invisible(result)
+.onLoad <- function(lib, pkg) {
+    is.ra <<- length(grep(" Ra ", R.version.string)) != 0
+    if(is.ra) {
+        # we are running standard Ra, so delete the jit defined
+        # above (leaving the internally defined jit in place)
+        rm(jit, inherits=TRUE)
     }
 }
