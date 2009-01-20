@@ -68,9 +68,8 @@
 
         \item Assignment to scalars or vectors: \code{x <- y}
 
-        \item \link[=Extract]{Subscripted} vectors with a positive integer
-         or real scalar subscript: \code{x[i] <- y[j]}.
-         Double subscripts \code{x[i,j]} are jitted too, but not
+        \item \link[=Extract]{Subscripted} vectors: \code{x[i] <- y[j]}.
+         Multiple subscripts \code{x[i,j]} are not jitted
          on the lhs of assignments.
 
         \item \link{Control} constructs such as
@@ -138,8 +137,8 @@
 \strong{Differences between standard R and jitted code}
 
     The JIT compiler will not allow you to change the length or type of a jitted variable.
-    (For this reason, the "L" suffix to define an integer constant \code{123L} is useful in JIT blocks,
-    although seldom used in standard R code.)
+    (For this reason, the "L" suffix to define an integer constant \code{123L} is
+    useful in JIT blocks, although seldom used in standard R code.)
     Here "type" means the type returned by \link{typeof}, such as
     \code{logical}, \code{integer}, or \code{double}.
 
@@ -148,10 +147,11 @@
     The idea is to keep the environment stable so jitted code can be efficient.
 
     \link[=NA]{NAs} of type \link{integer} and \link{logical} are not handled
-    in jitted code --- the next section gives details.
-
-    The results of comparison to \link{NaN} differ between standard R and jitted code
-     --- the next section gives details.
+    in jitted code.
+    \link[=double]{Double} NAs in arithmetic expressions may be converted to NaNs
+    on some architectures.
+    The results of comparison to \link{NaN} differ between standard R and jitted code.
+    The next section gives details.
 
     Integer arithmetic overflows are detected in standard R but not in jitted code
 
@@ -179,13 +179,17 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
     and propagate them (NaN + 123 is  NaN).
 
     \bold{Double NAs}: In R, one of the many possible values of NaN
-    provided by the hardware is defined to be the \link{double} \link{NA}.
+    provided by the hardware is defined to be the double NA.
     The hardware therefore makes no distinction between double NAs and other NaNs.
     Standard R evaluation has some software to handle double NAs
     over and above the hardware
     (mostly in type conversions, which don't get jitted anyway);
     jitted code has no such software.
     Thus in jitted code, double NAs behave identically to NaNs.
+
+    On some architectures,
+    the result of an jitted expression including a double NA may be NaN, not NA
+    i.e. double NAs may be propagated as NaNs.
 
     \bold{Integer and logical NAs}:
     Integer and logical NAs
@@ -197,8 +201,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
     The hardware does not know about integer and logical NAs.
     In standard R these are therefore handled in software;
     in jitted code they are treated like any other integer.
-    Thus a \link{logical} or \link{integer}
-    \link{NA} in jitted code is treated as
+    Thus a logical or integer NA in jitted code is treated as
     an integer with the value \code{INT_MIN} (with a logical value of TRUE).
 
     Remember that a plain NA in your program text is treated
@@ -216,7 +219,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
         \code{1.2 + NA   # evaluates to 1.2 + INT_MIN in jitted code}.
 
     Summarizing, avoid NAs in jitted code unless you are sure
-    that your NA is a \link{double}.
+    that your NA is a double.
 
     In jitted code, comparing anything to a NaN results in \code{FALSE},
     as per IEEE 754:
@@ -236,10 +239,10 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
         1L \%/\% 0L     integer NA        runtime error message
         1L \%\% 0L      integer NA        runtime error message
 }
-  The last two are justified by the fact that \link{integer} NAs
+  These discrepancies are justified by the fact that integer NAs
   are meaningless in jitted code so it does not make sense to generate one.
-  On the other hand, standard division "/" of an integer by zero evaluates to
-  double \code{Inf} in both standard R and jitted code.
+  On the other hand, standard division "/" of an integer by zero evaluates
+  to double \code{Inf} in both standard R and jitted code.
 
 \strong{Optimizing nested loops with jit(2)}
 
