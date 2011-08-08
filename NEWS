@@ -1,6 +1,11 @@
 Jit Package NEWS
 ----------------
 
+1.3-0 Aug 09, 2011
+
+     Upgrades for Ra 1.3.0.  We now support jit(jit=3).  Please use
+     Ra 1.3.0 (or greater) with this version of this package.
+
 1.0-4 Jan 20, 2009
 
      Fixed tests and docs to deal with non-propagation of NaNs
@@ -13,18 +18,18 @@ Jit Package NEWS
 
 1.0-2 Jan 5, 2009
       The is.ra flag was not being set reliably.  This was possibly related
-      to recent changes in library code in standard R.  Fixed it by 
-      moving the code in jit.R into .onLoad() and using assign(). 
+      to recent changes in library code in standard R.  Fixed it by
+      moving the code in jit.R into .onLoad() and using assign().
       Thanks to Dirk Eddelbuettel for nailing this.
 
 1.0-1 Jan 3, 2009
       Man page touchups for Ra 1.2.1 (based on R 2.8.1)
 
 1.0-0 Oct 23, 2008
-      Man page touchups for Ra 1.2.0 (which added support of 
+      Man page touchups for Ra 1.2.0 (which added support of
       matrix subscripts and is based on R 2.8.0)
 
-0.0-7 May 28, 2008 
+0.0-7 May 28, 2008
       Minor man page tweaks for Ra 1.1.0
 
 0.0-6 Tidy up of jit.R

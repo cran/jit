@@ -7,34 +7,38 @@
 
   This function is only useful under Ra.
   It has no effect under standard R.
-  See \url{http://www.milbo.users.sonic.net/ra/index.html}.
+  See \url{http://www.milbo.users.sonic.net/ra}.
 
-  This help page is for Ra 1.2.1 and higher.
+  This help page is for Ra 1.3.0 and higher.
 }
 \usage{
   jit(jit = NA, trace = 0)
 }
 \arguments{
   \item{jit}{
-    \strong{NA} make no changes but return the current JIT state (default)
+    \strong{NA} Make no changes but return the current JIT state (default)
 
-    \strong{0}  end JIT block ---
-        using \code{jit(0)} is usually unnecessary because an implicit \code{jit(0)} is
-        performed when the function returns
+    \strong{0}  End JIT block.
+        Using \code{jit(0)} is usually unnecessary because an implicit \code{jit(0)} is
+        performed when the function returns.
 
-    \strong{1}  start JIT block
+    \strong{1}  Start JIT block.
 
-    \strong{2}  start JIT block with extra optimization of nested loops (fast but
-                potentially dangerous, see below)
+    \strong{2}  Start JIT block with extra optimization of nested loops.
+                Fast but potentially dangerous, see below.
+
+    \strong{3}  Start JIT block with sanity checks.
+                Very slow, mainly for development of the jitter code.\cr\cr
+
   }
   \item{trace}{
-    \strong{0} silent (default)
+    \strong{0} Silent (default).
 
-    \strong{1} show which expressions are compiled to JIT code
+    \strong{1} Show which expressions are compiled to JIT code.
 
-    \strong{2} show compilation details
+    \strong{2} Show compilation details.
 
-    \strong{3} show code generation details
+    \strong{3} Show code generation details.  With \code{jit=3} also show code execution.
   }
 }
 \details{
@@ -96,6 +100,8 @@
         \link{gammaCody}
         \link{lgamma}
         \link{log}
+        \link{log2}
+        \link{log10}
         \link{log1p}
         \link{sin}
         \link{sign}
@@ -129,10 +135,10 @@
 
     The short version of the next few sections is:
 \itemize{
-    \item you will get an error message if you change the type or length
+    \item You will get an error message if you change the type or length
           of a jitted variable.  There are a few other semantic restrictions.
-    \item arithmetic in jitted code is similar to C.
-    \item avoid NAs in jitted code (NaNs are ok).
+    \item Arithmetic in jitted code is similar to C.
+    \item Avoid NAs in jitted code (NaNs are ok).
 }
 \strong{Differences between standard R and jitted code}
 
@@ -246,8 +252,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
 
 \strong{Optimizing nested loops with jit(2)}
 
-  Use \code{jit(2)} instead of \code{jit(1)} for extra optimization
-  of inner nested loops.
+  Use \code{jit(2)} for extra optimization of inner nested loops.
   In the example below the inner \code{j} loop will
   undergo this optimization:
 \preformatted{
@@ -278,7 +283,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
   \item Do not use \code{break} or \code{next} in the inner loop (they
         will incorrectly break to the outer loop, but please don't rely on this).
         It is, however, ok to use \code{return} in the inner loop.
-  \item There is no NAMED handling in the inner loop [RA\_TODO elaborate].
+  \item There is no NAMED handling in the inner loop [TODO elaborate].
   \item Assigning to the inner loop variable causes incorrect results and
         an error message (which is issued only at the
         end of the loop):
@@ -304,18 +309,18 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
 
     More types of expression will be jitted in future releases.
 
-\strong{Note for package writers}
-
-If your package benefits from \code{jit}, then
-we suggest that you simply make your package require \code{jit}
-(by putting \code{Depends:jit} in the \code{DESCRIPTION} file).
-People can then use standard R with your package ---
-calls to \code{jit()} will have no effect but will not cause warnings or errors ---
-but people who use Ra will get speedups.
-You could put a remark in your package documentation saying
-that speed will be improved using Ra instead of R.
-% You can also use \code{\link{is.ra}} to issue a warning if
-% you really want your users to use Ra instead of R.
+% \strong{Note for package writers}
+% 
+% If your package benefits from \code{jit}, then
+% we suggest that you simply make your package require \code{jit}
+% (by putting \code{Depends:jit} in the \code{DESCRIPTION} file).
+% People can then use standard R with your package ---
+% calls to \code{jit()} will have no effect but will not cause warnings or errors ---
+% but people who use Ra will get speedups.
+% You could put a remark in your package documentation saying
+% that speed will be improved using Ra instead of R.
+% % You can also use \code{\link{is.ra}} to issue a warning if
+% % you really want your users to use Ra instead of R.
 }
 \value{
     This function returns a three element integer vector.\cr
@@ -325,7 +330,7 @@ that speed will be improved using Ra instead of R.
 
     \bold{Value under Ra}\cr\cr
        \code{[1]} The value of the last specified \code{jit} argument to \code{jit()},
-             so is \code{1} or \code{2} if in a JIT block, else \code{0}.
+             so is \code{1}, \code{2}, or \code{3} if in a JIT block, else \code{0}.
              Is \code{0} in functions called from the JIT block.\cr\cr
        \code{[2]} The value of the last specified \code{trace} argument to \code{jit()}.
              Is \code{0} in functions called from the JIT block.\cr\cr
@@ -343,9 +348,10 @@ that speed will be improved using Ra instead of R.
     }
 }
 \seealso{
-    For more information on the jitter see \url{http://www.milbo.users.sonic.net/ra/index.html}\cr
+    For more information on the jitter see \url{http://www.milbo.users.sonic.net/ra}\cr\cr
     \code{\link{nojit}}\cr
     \code{\link{is.ra}}\cr
+    \code{\link[=compile]{enableJIT}} in the \code{\link[=compile]{compiler}} package is not related\cr
     \code{\link{jitter}} is not related
 }
 \examples{
@@ -356,10 +362,12 @@ foo <- function(N, jit.flag) {
        x <- x + 1
     x
 }
+if(!is.ra)
+    cat("\nExpect no speedup because you are running R, not Ra.\n")
 N = 1e6
 time.nojit <- system.time(foo(N, jit.flag=0))[1]
 time.jit   <- system.time(foo(N, jit.flag=1))[1]
-cat("Time ratio", time.jit / time.nojit, "\n")
+cat("Time ratio", time.nojit / time.jit, "\n")
 jit(0)
 }
 \keyword{programming}
