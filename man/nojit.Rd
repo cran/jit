@@ -18,8 +18,8 @@ Sometimes this can be a nuisance, and if so you can
 use \code{nojit(variable)} to inhibit jitting of the specified variable.
 
 Any error message (not necessarily issued by the jitter)
-disables jitting and thus clears all \code{nojit} settings
-i.e. if there is an error message you will have to re-\code{nojit} your variable.
+disables jitting and thus clears all \code{nojit} settings ---
+so after an error message you will need to re-\code{nojit} your variable.
 }
 \value{
 A character vector containing the symbols marked as not jittable, if any,

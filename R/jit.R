@@ -25,14 +25,15 @@ jit <- function(jit = NA, trace = 0) {
 }
 
 nojit <- function(sym = NULL) {
+    sym                 # evaluate to check that sym exists
     result <- NULL
     # use substitute else do_nojit gets the already evaluated sym
     if(is.ra)
         result <- .Internal(nojit(substitute(sym)))
     if(is.null(sym))    # default arg?
-        result          # show nojit symbols
-    else
         invisible(result)
+    else
+        result          # show nojit symbols
 }
 
 .onLoad <- function(lib, pkg) {

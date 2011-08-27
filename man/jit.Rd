@@ -38,7 +38,9 @@
 
     \strong{2} Show compilation details.
 
-    \strong{3} Show code generation details.  With \code{jit=3} also show code execution.
+    \strong{3} Show code generation details.
+
+    \strong{4} With \code{jit=3} show code execution.
   }
 }
 \details{
@@ -310,7 +312,7 @@ x <- for (i in 1:3) 99  # x is set to 99 in standard R but NULL when jitting
     More types of expression will be jitted in future releases.
 
 % \strong{Note for package writers}
-% 
+%
 % If your package benefits from \code{jit}, then
 % we suggest that you simply make your package require \code{jit}
 % (by putting \code{Depends:jit} in the \code{DESCRIPTION} file).
